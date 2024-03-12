@@ -29,7 +29,8 @@ typedef struct {
 // gcc inClass.c -o inclass
 // inclass words.dms
 int main(int argc, char* argv[]) {
-    /*int a = 10;
+    printf("hello world!\n");
+    int a = 10;
 
     int* p = a;
 
@@ -37,20 +38,21 @@ int main(int argc, char* argv[]) {
     int* bPtr = b;
 
     printf("b[0] = %d; b[0] = %d; *bPtr = %d; bPtr[1] = %d; *(bPtr + 1) = %d; \n", b[0], b[1], *bPtr, bPtr[1], *(bPtr+1));
-    */
-    /*printf("a = %d; *p = %p; &a = %p\n", a, *p, p, &a);
+
+    printf("a = %d; *p = %p; &a = %p\n", a, *p, p, &a);
 
     function1(a);
     function1(p);
 
     printf("a = %d; *p = %p; &a = %p\n", a, *p, p, &a);
 
-    function2(p)
+    function2(p);
     printf("a = %d; *p = %p; &a = %p\n", a, *p, p, &a);
 
-    function2(&a) // Address of a
+    function2(&a); // Address of a
     printf("a = %d; *p = %p; &a = %p\n", a, *p, p, &a);
-    */
+
+    /*
     if(argc < 2) {
         printf("Usage: ./program filename\n");
         return 1;
@@ -88,5 +90,6 @@ int main(int argc, char* argv[]) {
     fclose(fp);
     printf("The longest word \"%s\" is of size %d\n", longestWord.word, longestWord.length);
     free(longestWord.word);
+     */
     return 0;
 }
