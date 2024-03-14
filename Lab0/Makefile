@@ -1,3 +1,4 @@
+# Author: Daniel Laritz
 # To compile all three programs, list all executable names here.
 all: paint palindrome list
 
@@ -18,7 +19,13 @@ list.o: list.c
 	gcc list.c -c -g -lm -Wall
 
 # Add the statements here to compile "palindrome.c" and create "palindrome". 
+# Creates the executable "palindrome" using the flag "-o".
+palindrome: palindrome.o
+	gcc palindrome.o -o palindrome -g -lm -Wall
 
+# Creates the object file "palindrome.o" using the flag "-c".
+palindrome.o: palindrome.c
+	gcc palindrome.c -c -g -lm -Wall
 
 
 
