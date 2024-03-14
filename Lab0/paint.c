@@ -27,9 +27,9 @@ float calcArea(float width, float height, float depth) {
 
 int main(int argc, char *argv[]){
     //your code here
-    float width = readDimension("width> ");
-    float height = readDimension("height> ");
-    float depth = readDimension("depth> ");
+    float width = readDimension("width>");
+    float height = readDimension("height>");
+    float depth = readDimension("depth>");
     float area = calcArea(width, height, depth);
     printf("Total Area: %f\n", area);
     int num_cans = ceil((float)area / CAN_COVERAGE);
