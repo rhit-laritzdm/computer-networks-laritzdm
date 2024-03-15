@@ -24,14 +24,26 @@
 */
 
 bool isPalindrome(const char* line, size_t len) {
-    for (int i = 0; i < len; i++) {
-        if (!isalpha(line[i])) {
-            return false; // Not alphabetical
+    // Initialize counters to first and last characters
+    int i = 0;
+    int j = len - 1;
+    while (i <= j) {
+        // find next alphabetic character for i and j
+        while(!isalpha(line[i]) ) {
+            i++;
         }
-        if (line[i] != line[len - i - 1]) {
+        while(!isalpha(line[j]) ) {
+            j--;
+        }
+        // Check if characters are equal
+        if (tolower(line[i]) != tolower(line[j])) {
             return false; // Not a palindrome
         }
+        // increment i and decrement j
+        i++;
+        j--;
     }
+    // made it out of while loop, must be a palindrome
     return true;
 }
 
@@ -45,6 +57,8 @@ int main(int argc, char *argv[]) {
         if ((len == 1) && (word[0] == '.')) {
             return 0;
         }
+        // Will run into problems if user input has apostrophes or other similar characters
+        // I'm not sure how to sanitize the string for printing and checking if it is a palindrome.
         if (isPalindrome(word, len)) {
             printf("\"%s\" is a palindrome.\n", word);
         } else {
