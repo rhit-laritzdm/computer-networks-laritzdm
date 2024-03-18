@@ -49,9 +49,9 @@ bool isPalindrome(const char* line, size_t len) {
 
 int main(int argc, char *argv[]) {
     while(1) {
-        char word[20];
+        char word[40];
         printf("Enter a word: ");
-        fgets(word,20,stdin);
+        fgets(word,40,stdin);
         word[strcspn(word, "\n")] = 0; // Remove new line character
         size_t len = strlen(word);
         if ((len == 1) && (word[0] == '.')) {
