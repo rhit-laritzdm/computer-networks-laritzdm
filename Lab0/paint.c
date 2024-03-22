@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
     float depth = readDimension("depth>");
     float area = calcArea(width, height, depth);
     printf("Total Area: %f\n", area);
-    int num_cans = ceil((float)area / CAN_COVERAGE);
+    double num_cans = ceil((float)area / CAN_COVERAGE);
     printf("Number of cans required: %d\n", num_cans);
     return 0;
 }
