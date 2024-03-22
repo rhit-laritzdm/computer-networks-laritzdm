@@ -33,6 +33,6 @@ int main(int argc, char *argv[]){
     float area = calcArea(width, height, depth);
     printf("Total Area: %f\n", area);
     double num_cans = ceil((float)area / CAN_COVERAGE);
-    printf("Number of cans required: %d\n", num_cans);
+    printf("Number of cans required: %f\n", num_cans);
     return 0;
 }
