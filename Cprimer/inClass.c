@@ -30,6 +30,7 @@ typedef struct {
 // inclass words.dms
 int main(int argc, char* argv[]) {
     printf("hello world!\n");
+
     int a = 10;
 
     int* p = a;
@@ -39,18 +40,18 @@ int main(int argc, char* argv[]) {
 
     printf("b[0] = %d; b[0] = %d; *bPtr = %d; bPtr[1] = %d; *(bPtr + 1) = %d; \n", b[0], b[1], *bPtr, bPtr[1], *(bPtr+1));
 
-    printf("a = %d; *p = %p; &a = %p\n", a, *p, p, &a);
+    printf("a = %d; *p = %d; p = %ls; &a = %ls\n", a, *p, p, &a);
 
     function1(a);
     function1(p);
 
-    printf("a = %d; *p = %p; &a = %p\n", a, *p, p, &a);
+    printf("a = %d; *p = %d; p = %ls; &a = %ls\n", a, *p, p, &a);
 
     function2(p);
-    printf("a = %d; *p = %p; &a = %p\n", a, *p, p, &a);
+    printf("a = %d; *p = %d; p = %ls; &a = %ls\n", a, *p, p, &a);
 
     function2(&a); // Address of a
-    printf("a = %d; *p = %p; &a = %p\n", a, *p, p, &a);
+    printf("a = %d; *p = %d; p = %ls; &a = %ls\n", a, *p, p, &a);
 
     /*
     if(argc < 2) {
