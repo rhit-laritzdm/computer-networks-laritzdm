@@ -10,6 +10,38 @@
 
 /*Optional functions, uncomment the next two lines
  * if you want to create these functions after main: */
+bool readLine(char** line, size_t* size, size_t* length) {
+    while (1) {
+        size_t len = getline(line, size, stdin);
+
+        if(len == -1)
+            return false;
+        // dereferencing line
+        // if ends in new line, decrease length by 1 and set it to be null terminator
+        if((*line)[len-1] == '\n') {
+            len--;
+            (*line)[len] = '\0';
+        }
+
+
+        *length = len;
+
+        if(len == 0)
+            continue;
+
+        // **line is first character of the array
+        // returns true if more than 1 character, or first character is not "."
+        return len > 1 || **line != '.';
+    }
+    /*
+    // dereference to assign value not address
+    size_t len = getline(line, size, stdin);
+    if (*length == 0) {
+        return false;
+    }
+    return true;
+     */
+}
 
 /* 
   * NOTE that I used char** for the line above... this is a pointer to
@@ -48,21 +80,24 @@ bool isPalindrome(const char* line, size_t len) {
 }
 
 int main(int argc, char *argv[]) {
+    if (argc != 1) {
+        printf("Usage: ./palindrome\n");
+        return 1;
+    }
+    // ptr -> ptr -> actual array
+    char* line;
+    size_t size;
+    size_t length;
     while(1) {
-        char word[40];
         printf("Enter a word: ");
-        fgets(word,40,stdin);
-        word[strcspn(word, "\n")] = 0; // Remove new line character
-        size_t len = strlen(word);
-        if ((len == 1) && (word[0] == '.')) {
+        if (!readLine(&line, &size, &length)) {
             return 0;
         }
-        // Will run into problems if user input has apostrophes or other similar characters
-        // I'm not sure how to sanitize the string for printing and checking if it is a palindrome.
-        if (isPalindrome(word, len)) {
-            printf("\"%s\" is a palindrome.\n", word);
+        //line[strcspn(line, "\n")] = 0; // Remove new line character
+        if (isPalindrome(line, length)) {
+            printf("\"%s\" is a palindrome.\n", line);
         } else {
-            printf("\"%s\" is not a palindrome.\n", word);
+            printf("\"%s\" is not a palindrome.\n", line);
         }
     }
 }

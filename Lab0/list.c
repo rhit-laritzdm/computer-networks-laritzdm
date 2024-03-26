@@ -15,7 +15,7 @@ typedef struct List_node_s {
 // Allocate space for new_node and set its word and length
 struct List_node_s* create_node(char* word, size_t len) {
     struct List_node_s* new_node
-            = (struct List_node_s*)malloc(sizeof(struct List_node_s));
+            = (struct List_node_s*) malloc(sizeof(struct List_node_s));
     (*new_node).word = word;
     (*new_node).length = len;
     return new_node;
