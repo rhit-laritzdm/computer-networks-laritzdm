@@ -17,7 +17,7 @@
 
 #define PORT "3490" // the port client will be connecting to
 
-#define MAXDATASIZE 100 // max number of bytes we can get at once
+#define MAXDATASIZE 1024 // max number of bytes we can get at once
 
 bool readLine(char** line, size_t* size, size_t* length);
 
@@ -33,11 +33,11 @@ void *get_in_addr(struct sockaddr *sa) {
 }
 
 int main(int argc, char *argv[]) {
-    int sockfd, numbytes;
+    int sockfd, bytessend, bytesrecv; //totalbytessend, totalbytesrecv;
     char buf[MAXDATASIZE];
-    //char* line;
-    //size_t size;
-    //size_t length;
+    char* line;
+    size_t size;
+    size_t length;
     struct addrinfo hints, *servinfo, *p;
     int rv; // stands for return value
     char s[INET6_ADDRSTRLEN];
@@ -98,27 +98,64 @@ int main(int argc, char *argv[]) {
 
     freeaddrinfo(servinfo);
 
+    // send messages to server
+    // int send(int sockfd, const void *msg, int len, int flags);
+    // ;;; is a protocol Wilkin made
+    line = "temp string";
+    while(strcmp(line, ";;;")) {
+        // send a message
+        //totalbytessend = 0;
+        readLine(&line, &size, &length); // User types a message
+        bytessend = send(sockfd, line, length, 0);
+        if (bytessend == -1) {
+            perror("send");
+            exit(1);
+        }
+        printf("Sent message '%s'\n", line);
+        /*
+        while (totalbytessend < length) {
+            bytessend = send(sockfd, line, length, 0);
+            if (bytessend == -1) {
+                perror("send");
+                exit(1);
+            }
+            totalbytessent += bytessent;
+        }
+         */
+
+        // recv a message
+        bytesrecv = recv(sockfd, buf, MAXDATASIZE-1, 0);
+        if (bytesrecv == -1) {
+            perror("recv");
+            exit(1); // I think this is the same as return(1);
+        }
+        buf[bytesrecv] = '\0';
+        printf("Received from server: '%s'\n", buf);
+    }
+
+
+    /*
     // listens for message from server
-    numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0);
-    if (numbytes == -1) {
+    bytesrecv = recv(sockfd, buf, MAXDATASIZE-1, 0);
+    if (bytesrecv == -1) {
         perror("recv");
         exit(1); // I think this is the same as return(1);
     }
 
-    buf[numbytes] = '\0';
+    buf[bytesrecv] = '\0';
 
     // prints message from server to terminal
     printf("client: received '%s'\n", buf);
-
+     */
+    printf("closing socket\n");
     close(sockfd);
-
     return 0;
 }
 
 // reads line entered in terminal and saves it to "char** line" variable
 bool readLine(char** line, size_t* size, size_t* length) {
     while (1) {
-        printf("string for the server> ");
+        printf("-> ");
         size_t len = getline(line, size, stdin);
 
         if(len == -1)
@@ -133,7 +170,7 @@ bool readLine(char** line, size_t* size, size_t* length) {
         if(len == 0)
             continue;
 
-        // **line is first character of the array
-        return len > 1 || **line != '.';
+        // return whether the sentinel value was sent
+        return strcmp(*line, ";;;");
     }
 }
