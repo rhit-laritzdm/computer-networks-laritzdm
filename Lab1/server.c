@@ -1,6 +1,7 @@
 /*
 ** server.c -- a stream socket server
  * Used beej.us/guide/bgnet/html for help
+ * Used
 */
 
 #include <stdio.h>
@@ -16,10 +17,17 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <ctype.h>
 
 #define BACKLOG 10 // how many pending connections the queue will hold
+#define MAXDATASIZE 1024 // how many characters the msg can be
 
-bool readLine(char** line, size_t* size, size_t* length);
+void strupr(char* s) {
+    char* temp = s;
+    for (; *temp; ++temp) {
+        *temp = toupper((unsigned char) *temp);
+    }
+}
 
 void sigchld_handler(int s) {
     // waitpid() might overwrite errno, so we save and restore it:
@@ -40,19 +48,26 @@ void *get_in_addr(struct sockaddr *sa) {
 }
 
 int main(int argc, char *argv[]) {
-    int sockfd_s, sockfd_c; // listen on sockfd_s (server), new connection on sockfd_c (client)
+    int sockfd_s, sockfd_c, bytesrecv, bytessend; // listen on sockfd_s (server), new connection on sockfd_c (client)
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage client_addr; // client's address information
     socklen_t sin_size;
     struct sigaction sa;
     int yes = 1;
+    int client_num = 0;
     int rv; // stands for return value
     char s[INET6_ADDRSTRLEN];
+    //char* msgrecv;
+    //char* msgsend;
+    char msgrecv[MAXDATASIZE]; // msg received from client
+    //char msgsend[MAXDATASIZE]; // msg to send to client
+
 
     if (argc != 2) {
         fprintf(stderr,"usage: server port\n");
         exit(1);
     }
+    printf("Serial Server on host is listening on port %s\n", argv[1]);
 
     // Allocates memory for "hints" and sets it to all zeros
     memset(&hints, 0, sizeof hints);
@@ -118,7 +133,8 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    printf("server: waiting for connections...\n");
+    printf("Serial Server starting, listening on port %s\n", argv[1]);
+    printf("********************************************************************************\n");
 
     while(1) { // main accept loop
         sin_size = sizeof client_addr;
@@ -133,14 +149,33 @@ int main(int argc, char *argv[]) {
         inet_ntop(client_addr.ss_family,
                   get_in_addr((struct sockaddr *) &client_addr),
                   s, sizeof s);
-        printf("server: got connection from %s\n", s);
-
+        printf("Received connection request from %s\n", s);
+        client_num++;
         if (!fork()) { // child process to handle a single connection
             close(sockfd_s); // child doesn't need listener
-            // sends hello world message
-            if (send(sockfd_c, "Hello, world!", 13, 0) == -1) {
-                perror("send");
+            printf("Now listening for incoming messages...\n");
+            while(strcmp(msgrecv, ";;;")) {
+                // recv a message
+                bytesrecv = recv(sockfd_c, &msgrecv, MAXDATASIZE-1, 0);
+                if (bytesrecv == -1) {
+                    perror("recv");
+                    exit(1); // I think this is the same as return(1);
+                }
+                msgrecv[bytesrecv] = '\0';
+
+                printf("Received the following message from client %d: \n\"%s\"\n", client_num, msgrecv);
+                //printf("Length of message received is %lu\n", strlen(msgrecv));
+                // send a message
+                printf("Now sending message back to client %d having changed the string to upper case...\n", client_num);
+                strupr(msgrecv);
+                bytessend = send(sockfd_c, &msgrecv, strlen(msgrecv), 0);
+                if (bytessend == -1) {
+                    perror("send");
+                    exit(1);
+                }
             }
+
+            printf("Client %d finished, closing connection\n", client_num);
             close(sockfd_c);
             exit(0);
         }

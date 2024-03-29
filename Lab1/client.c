@@ -35,8 +35,8 @@ void *get_in_addr(struct sockaddr *sa) {
 int main(int argc, char *argv[]) {
     int sockfd, bytessend, bytesrecv; //totalbytessend, totalbytesrecv;
     char buf[MAXDATASIZE];
-    char* line;
-    size_t size;
+    char* msg = NULL;
+    size_t size = 0;
     size_t length;
     struct addrinfo hints, *servinfo, *p;
     int rv; // stands for return value
@@ -47,6 +47,8 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    printf("Client has requested to start connection with host %s on port %s\n", argv[1], argv[2]);
+    printf("********************************************************************************\n");
     // Allocates memory for "hints" and sets it to all zeros
     memset(&hints, 0, sizeof hints);
     // works for IPv4 or future types
@@ -94,35 +96,23 @@ int main(int argc, char *argv[]) {
               get_in_addr((struct sockaddr*) p->ai_addr),
                       s,
                       sizeof s);
-    printf("client: connecting to %s\n", s);
+    printf("Connection established, now waiting for user input...\n");
 
     freeaddrinfo(servinfo);
 
     // send messages to server
     // int send(int sockfd, const void *msg, int len, int flags);
     // ;;; is a protocol Wilkin made
-    line = "temp string";
-    while(strcmp(line, ";;;")) {
+    msg = "temp string";
+    while(strcmp(msg, ";;;")) {
         // send a message
-        //totalbytessend = 0;
-        readLine(&line, &size, &length); // User types a message
-        bytessend = send(sockfd, line, length, 0);
+        readLine(&msg, &size, &length); // User types a message
+        printf("Sending message to Server...\n");
+        bytessend = send(sockfd, msg, length, 0);
         if (bytessend == -1) {
             perror("send");
             exit(1);
         }
-        printf("Sent message '%s'\n", line);
-        /*
-        while (totalbytessend < length) {
-            bytessend = send(sockfd, line, length, 0);
-            if (bytessend == -1) {
-                perror("send");
-                exit(1);
-            }
-            totalbytessent += bytessent;
-        }
-         */
-
         // recv a message
         bytesrecv = recv(sockfd, buf, MAXDATASIZE-1, 0);
         if (bytesrecv == -1) {
@@ -130,34 +120,25 @@ int main(int argc, char *argv[]) {
             exit(1); // I think this is the same as return(1);
         }
         buf[bytesrecv] = '\0';
-        printf("Received from server: '%s'\n", buf);
+        printf("Received response from server of\n\"%s\"\n", buf);
     }
 
-
-    /*
-    // listens for message from server
-    bytesrecv = recv(sockfd, buf, MAXDATASIZE-1, 0);
-    if (bytesrecv == -1) {
-        perror("recv");
-        exit(1); // I think this is the same as return(1);
+    printf("User entered sentinel of \"%s\", now stopping client\n", buf);
+    printf("********************************************************************************\n");
+    printf("Attempting to shut down client sockets and other streams\n");
+    if (close(sockfd) == -1) {
+        perror("close");
+        exit(1);
     }
-
-    buf[bytesrecv] = '\0';
-
-    // prints message from server to terminal
-    printf("client: received '%s'\n", buf);
-     */
-    printf("closing socket\n");
-    close(sockfd);
+    printf("Shut down successful... goodbye");
     return 0;
 }
 
 // reads line entered in terminal and saves it to "char** line" variable
 bool readLine(char** line, size_t* size, size_t* length) {
     while (1) {
-        printf("-> ");
+        printf("prompt> ");
         size_t len = getline(line, size, stdin);
-
         if(len == -1)
             return false;
         // dereferencing line
