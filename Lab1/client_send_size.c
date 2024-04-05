@@ -35,11 +35,10 @@ void *get_in_addr(struct sockaddr *sa) {
 int main(int argc, char *argv[]) {
     int sockfd, bytessend, bytesrecv, totalbytesrecv;
     char buf[MAXDATASIZE];
-    //char* msgrecv = NULL;
+    char* msgrecv = NULL;
     char* msg = NULL;
     size_t size = 0;
     size_t length;
-    //uint32_t l;
     struct addrinfo hints, *servinfo, *p;
     int rv; // stands for return value
     char s[INET6_ADDRSTRLEN];
@@ -110,27 +109,38 @@ int main(int argc, char *argv[]) {
         // send a message
         readLine(&msg, &size, &length); // User types a message
         printf("Sending message to Server...\n");
-        bytessend = send(sockfd, msg, strlen(msg), 0);
-        //printf("sent message");
+        // Send the message length over
+        length = htonl(length);
+        bytessend = send(sockfd, &length, sizeof(length), 0);
+        printf("%d bytes sent\n", bytessend);
+        printf("%zu is the length\n", length);
         if (bytessend == -1) {
-            //printf("error in send");
             perror("send");
             exit(1);
         }
-        //printf("Sent actual message to Server...\n");
+        printf("Sent size of message to Server...\n");
+        // Send the actual message over
+        printf("%s is message and %zu is strlen(msg)\n",msg, strlen(msg));
+        bytessend = send(sockfd, msg, strlen(msg), 0);
+        printf("sent message");
+        if (bytessend == -1) {
+            printf("error in send");
+            perror("send");
+            exit(1);
+        }
+        printf("Sent actual message to Server...\n");
 
-        /*
+
         // receive the size of the message
         bytesrecv = recv(sockfd, &length, sizeof(length), 0);
         if (bytesrecv == -1) {
             perror("recv");
             exit(1); // I think this is the same as return(1);
         }
-         */
         // recv a message
         totalbytesrecv = 0;
-        msg = (char*)malloc((length+1) * sizeof(char));
-        bzero(msg, length+1);
+        msgrecv = (char*)malloc((length+1) * sizeof(char));
+        bzero(msgrecv, length+1);
         // while loop ensures entire message is received back before it is printed.
         while (totalbytesrecv < length) {
             bytesrecv = recv(sockfd, buf, MAXDATASIZE-1, 0);
@@ -139,13 +149,14 @@ int main(int argc, char *argv[]) {
                 exit(1); // I think this is the same as return(1);
             }
             buf[bytesrecv] = '\0';
-            strcat(msg, buf);
+            strcat(msgrecv, buf);
             totalbytesrecv += bytesrecv;
         }
-        printf("Received response from server of\n\"%s\"\n", msg);
+        printf("Received response from server of\n\"%s\"\n", msgrecv);
+        free(msgrecv);
     }
 
-    printf("User entered sentinel of \"%s\", now stopping client\n", msg);
+    printf("User entered sentinel of \"%s\", now stopping client\n", buf);
     printf("********************************************************************************\n");
     printf("Attempting to shut down client sockets and other streams\n");
     if (close(sockfd) == -1) {

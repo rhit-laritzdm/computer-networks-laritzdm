@@ -48,7 +48,7 @@ void *get_in_addr(struct sockaddr *sa) {
 }
 
 int main(int argc, char *argv[]) {
-    int sockfd_s, sockfd_c, bytesrecv, bytessend; // listen on sockfd_s (server), new connection on sockfd_c (client)
+    int sockfd_s, sockfd_c, bytesrecv, bytessend; //totalbytesrecv; // listen on sockfd_s (server), new connection on sockfd_c (client)
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage client_addr; // client's address information
     socklen_t sin_size;
@@ -57,11 +57,11 @@ int main(int argc, char *argv[]) {
     int client_num = 0;
     int rv; // stands for return value
     char s[INET6_ADDRSTRLEN];
-    //char* msgrecv;
-    //char* msgsend;
-    char msgrecv[MAXDATASIZE]; // msg received from client
+    char msg[MAXDATASIZE];
+    //char* msg; // msg received from client or msg to send to client
     //char buffer[MAXDATASIZE]; // buffer to hold packet from client
-    //char msgsend[MAXDATASIZE]; // msg to send to client
+    //size_t length;
+    //uint32_t l;
 
 
     if (argc != 2) {
@@ -155,43 +155,22 @@ int main(int argc, char *argv[]) {
         if (!fork()) { // child process to handle a single connection
             close(sockfd_s); // child doesn't need listener
             printf("Now listening for incoming messages...\n");
-            while(strcmp(msgrecv, ";;;")) {
+            while(strcmp(msg, ";;;")) {
                 // recv a message
-                /*
-                while(1) {
-                    bytesrecv = recv(sockfd_c, &buffer, MAXDATASIZE-1, 0);
-                    printf("received some bytes\n");
-                    if (bytesrecv == -1) {
-                        perror("recv");
-                        exit(1); // I think this is the same as return(1);
-                    }
-                    buffer[bytesrecv] = '\0';
-                    strcat(msgrecv, buffer);
-                    if (bytesrecv <= 1) {
-                        printf("breaking out\n");
-                        break;
-                    }
-                    bzero(msgrecv, MAXDATASIZE);
-                    printf("received a packet\n");
-                }
-                */
-
-                bytesrecv = recv(sockfd_c, &msgrecv, MAXDATASIZE-1, 0);
+                bytesrecv = recv(sockfd_c, &msg, MAXDATASIZE-1, 0);
                 if (bytesrecv == -1) {
                     perror("recv");
                     exit(1); // I think this is the same as return(1);
                 }
-                msgrecv[bytesrecv] = '\0';
+                msg[bytesrecv] = '\0';
 
-                if (strlen(msgrecv) <= 1) {
-                    continue;
-                }
-                printf("Received the following message from client %d: \n\"%s\"\n", client_num, msgrecv);
-                //printf("Length of message received is %lu\n", strlen(msgrecv));
+                printf("Received the following message from client %d: \n\"%s\"\n", client_num, msg);
                 // send a message
                 printf("Now sending message back to client %d having changed the string to upper case...\n", client_num);
-                strupr(msgrecv);
-                bytessend = send(sockfd_c, &msgrecv, strlen(msgrecv), 0);
+                strupr(msg);
+
+                // Send the actual message over
+                bytessend = send(sockfd_c, &msg, strlen(msg), 0);
                 if (bytessend == -1) {
                     perror("send");
                     exit(1);
