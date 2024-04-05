@@ -1,9 +1,10 @@
 import socket
 import sys
 
+SIZE = 16
 def client_program():
     if(len(sys.argv) != 3):
-        print("Usage: pyton client.py <ServerIP> <ServerPort>")
+        print("Usage: python client.py <ServerIP> <ServerPort>")
         sys.exit()
 
     port = int(sys.argv[2])
@@ -27,7 +28,7 @@ def client_program():
     while(message.lower().strip() != ';;;'):
         client_socket.send(message.encode())
 
-        in_data = client_socket.recv(1024).decode()
+        in_data = client_socket.recv(16).decode()
 
         print("Received from server: ", str(in_data))
 

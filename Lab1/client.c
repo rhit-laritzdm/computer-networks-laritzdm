@@ -17,7 +17,7 @@
 
 #define PORT "3490" // the port client will be connecting to
 
-#define MAXDATASIZE 1024 // max number of bytes we can get at once
+#define MAXDATASIZE 16 // max number of bytes we can get at once
 
 bool readLine(char** line, size_t* size, size_t* length);
 
@@ -34,7 +34,9 @@ void *get_in_addr(struct sockaddr *sa) {
 
 int main(int argc, char *argv[]) {
     int sockfd, bytessend, bytesrecv; //totalbytessend, totalbytesrecv;
+    int totalbytesrecv;
     char buf[MAXDATASIZE];
+    char* msgrecv = NULL;
     char* msg = NULL;
     size_t size = 0;
     size_t length;
@@ -114,13 +116,22 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
         // recv a message
-        bytesrecv = recv(sockfd, buf, MAXDATASIZE-1, 0);
-        if (bytesrecv == -1) {
-            perror("recv");
-            exit(1); // I think this is the same as return(1);
+        totalbytesrecv = 0;
+        msgrecv = (char*)malloc((length+1) * sizeof(char));
+        bzero(msgrecv, length+1);
+        // while loop ensures entire message is received back before it is printed.
+        while (totalbytesrecv < length) {
+            bytesrecv = recv(sockfd, buf, MAXDATASIZE-1, 0);
+            if (bytesrecv == -1) {
+                perror("recv");
+                exit(1); // I think this is the same as return(1);
+            }
+            buf[bytesrecv] = '\0';
+            strcat(msgrecv, buf);
+            totalbytesrecv += bytesrecv;
         }
-        buf[bytesrecv] = '\0';
-        printf("Received response from server of\n\"%s\"\n", buf);
+        printf("Received response from server of\n\"%s\"\n", msgrecv);
+        free(msgrecv);
     }
 
     printf("User entered sentinel of \"%s\", now stopping client\n", buf);

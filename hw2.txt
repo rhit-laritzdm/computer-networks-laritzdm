@@ -1,0 +1,46 @@
+EHLO rose-hulman.edu
+MAIL FROM: <laritzdm@rose-hulman.edu>
+RCPT TO: <wilkin@rose-hulman.edu>
+DATA
+From: "Nervous Nelly" <nervousnelly@rose-hulman.edu>
+Date: Wed, 3 Apr 2024 19:15:31 -0400
+Subject: CSSE432 Homework 2 Daniel Laritz
+To: "Aaron Wilkin" <wilkin@rose-hulman.edu>
+Message-ID: <39a014a5-29d9-47bb-a1db-ae3dc4ca63e9@rose-hulman.edu>
+
+Oh no! The ROSE-HULMAN.EDU domain expires on 31-Jul-2024.
+I sure hope thats not too soon! Good thing I graduate before then.
+
+I'm scared of how the future will have ai robots controlling everything. I must learn to be able to fight back. My first step will be hacking (tracing) hackthissite.org
+dig . NS
+dig +norec @a.root-servers.net hackthissite.org
+dig +norec @d0.org.afilias-nst.org hackthissite.org
+dig +norec @j.ns.buddyns.com hackthissite.org
+137.74.187.101   137.74.187.100   137.74.187.103 137.74.187.103   137.74.187.104   137.74.187.102
+
+I've made such powerful skills in tracing websites, hopefully the ai robots don't come after me in the future.
+I need to be prepared in case the scary ai robots come from Rose-Hulman. To be prepared, I tracked down the IP address of one of Rose-Hulman's (authoritative) name servers. 
+nw-408.awsdns-51.com
+
+Hmm, if the ai robots start coming for me, I might have to figure out a way to redirect them.
+Some pros of HTTP redirect is that it allows for fine-grain control and selection based on the client IP address. Some cons of HTTP redirect is that it takes extra round trips for a TCP connection, it requires DNS lookups for each new server in the process, and there are overhead costs for the server.
+Some pros of DNS redirect are that it doesn't have a TCP set-up delay, DNS caching can reduce overhead, and there is relatively fine control. Some cons are that it is based on the IP address of the local DNS server, there is a hidden load as one DNS response may lead to many machines using the same information (and thus the same server).
+I don't know if this is enough, but I'm a little less nervous for when they come.
+
+Please save me,
+Nervous Nelly
+
+.
+
+QUIT
+
+
+
+Enter this into terminal to connect to mail server
+dig rose-hulman.edu MX
+whois rose-hulman.edu
+telnet rosehulman-edu01b.mail.protection.outlook.com 25
+^]
+quit
+auth login
+Veneficus96

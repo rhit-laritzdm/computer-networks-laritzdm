@@ -20,7 +20,7 @@
 #include <ctype.h>
 
 #define BACKLOG 10 // how many pending connections the queue will hold
-#define MAXDATASIZE 1024 // how many characters the msg can be
+#define MAXDATASIZE 16 // how many characters the msg can be
 
 void strupr(char* s) {
     char* temp = s;
@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
     //char* msgrecv;
     //char* msgsend;
     char msgrecv[MAXDATASIZE]; // msg received from client
+    //char buffer[MAXDATASIZE]; // buffer to hold packet from client
     //char msgsend[MAXDATASIZE]; // msg to send to client
 
 
@@ -156,6 +157,25 @@ int main(int argc, char *argv[]) {
             printf("Now listening for incoming messages...\n");
             while(strcmp(msgrecv, ";;;")) {
                 // recv a message
+                /*
+                while(1) {
+                    bytesrecv = recv(sockfd_c, &buffer, MAXDATASIZE-1, 0);
+                    printf("received some bytes\n");
+                    if (bytesrecv == -1) {
+                        perror("recv");
+                        exit(1); // I think this is the same as return(1);
+                    }
+                    buffer[bytesrecv] = '\0';
+                    strcat(msgrecv, buffer);
+                    if (bytesrecv <= 1) {
+                        printf("breaking out\n");
+                        break;
+                    }
+                    bzero(msgrecv, MAXDATASIZE);
+                    printf("received a packet\n");
+                }
+                */
+
                 bytesrecv = recv(sockfd_c, &msgrecv, MAXDATASIZE-1, 0);
                 if (bytesrecv == -1) {
                     perror("recv");
@@ -163,6 +183,9 @@ int main(int argc, char *argv[]) {
                 }
                 msgrecv[bytesrecv] = '\0';
 
+                if (strlen(msgrecv) <= 1) {
+                    continue;
+                }
                 printf("Received the following message from client %d: \n\"%s\"\n", client_num, msgrecv);
                 //printf("Length of message received is %lu\n", strlen(msgrecv));
                 // send a message
