@@ -20,7 +20,7 @@
 #include <ctype.h>
 
 #define BACKLOG 10 // how many pending connections the queue will hold
-#define MAXDATASIZE 16 // how many characters the msg can be
+#define MAXDATASIZE 1024 // how many characters the msg can be
 
 void strupr(char* s) {
     char* temp = s;
@@ -58,6 +58,8 @@ int main(int argc, char *argv[]) {
     int rv; // stands for return value
     char s[INET6_ADDRSTRLEN];
     char msg[MAXDATASIZE];
+    int msgcount = 0;
+    char msgsend[MAXDATASIZE + 2];
     //char* msg; // msg received from client or msg to send to client
     //char buffer[MAXDATASIZE]; // buffer to hold packet from client
     //size_t length;
@@ -168,9 +170,10 @@ int main(int argc, char *argv[]) {
                 // send a message
                 printf("Now sending message back to client %d having changed the string to upper case...\n", client_num);
                 strupr(msg);
-
+                msgcount++;
+                sprintf(msgsend, "%d %s", msgcount, msg);
                 // Send the actual message over
-                bytessend = send(sockfd_c, &msg, strlen(msg), 0);
+                bytessend = send(sockfd_c, &msgsend, strlen(msgsend), 0);
                 if (bytessend == -1) {
                     perror("send");
                     exit(1);

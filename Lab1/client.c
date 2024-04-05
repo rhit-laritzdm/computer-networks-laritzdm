@@ -17,7 +17,7 @@
 
 #define PORT "3490" // the port client will be connecting to
 
-#define MAXDATASIZE 16 // max number of bytes we can get at once
+#define MAXDATASIZE 1024 // max number of bytes we can get at once
 
 bool readLine(char** line, size_t* size, size_t* length);
 
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
         msg = (char*)malloc((length+1) * sizeof(char));
         bzero(msg, length+1);
         // while loop ensures entire message is received back before it is printed.
-        while (totalbytesrecv < length) {
+        while (totalbytesrecv < (length+2)) {
             bytesrecv = recv(sockfd, buf, MAXDATASIZE-1, 0);
             if (bytesrecv == -1) {
                 perror("recv");
