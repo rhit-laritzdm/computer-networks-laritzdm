@@ -47,6 +47,7 @@ def server_program():
 
     server_socket.close()
 
+
 def server_thread(client_socket, client_num):
     while True:
         # it wont just send all if u do big number, it will break it up
@@ -56,7 +57,7 @@ def server_thread(client_socket, client_num):
         request = client_socket.recv(SIZE).decode()
 
         # times out or client left: received null
-        if not request:
+        if (not request) or (request.lower().strip() == ';;;'):
             break
         else:
             print("Received request from client: ", str(client_num), str(request))
@@ -64,13 +65,16 @@ def server_thread(client_socket, client_num):
 
     client_socket.close()
 
+
 def handle_request(socket, request):
     if request.startswith("iWant"):
         server_i_want(socket, request)
     elif request.startswith("uTake"):
         server_u_take(socket, request)
     else:
-        print("Error: Improperly formatted request received from client.")
+        print("That just aint right!")
+        socket.send("0".encode())
+
 
 def server_i_want(socket, request):
     # check if file exists
@@ -80,8 +84,8 @@ def server_i_want(socket, request):
         send_file(socket, file_path)
     else:
         # File does not exist at the specified file path
-        print("Error: file not found, verify file exists at file path and request is properly formatted")
-        # sends -1 for the file_size so client knows a file isn't coming
+        print("What you talkin bout Willis? I aint seen that file anywhere!")
+        # sends 0 for the file_size so client knows a file isn't coming
         socket.send("0".encode())
 
 
@@ -90,15 +94,27 @@ def server_u_take(socket, request):
     if os.path.isfile(file_path):
         print("You already have this file dummy")
         print("Cancelling request")
+        socket.send("0".encode())
     else:
         # send the request and file
-        print("Replying to uTake request")
+        print("Requested file was found")
+        # reply with confirmation
+        socket.send("1".encode())
+        print("Sent Confirmation of request")
         recv_file(socket, file_path)
+
 
 def send_file(socket, file_path):
     file_size = os.path.getsize(file_path)
     print("Sending file of size: " + str(file_size))
     socket.send(str(file_size).encode())
+    # Wait for confirmation before sending file
+    size_confirmation = socket.recv(SIZE).decode()
+    if size_confirmation != "1":
+        # don't send file
+        print("Didn't receive proper confirmation, not sending file.")
+        return
+
     # open file and read in binary mode
     file = open(file_path, 'rb')
     # send one line at a time
@@ -107,30 +123,36 @@ def send_file(socket, file_path):
         socket.send(line)
         line = file.read(SIZE)
     file.close()
+    print("Finished sending file")
+
 
 def recv_file(socket, file_path):
+    # assumes next message is size of file
+    file_size_string = socket.recv(SIZE).decode()
+    print("File size: " + file_size_string)
+    file_size = int(file_size_string)
+
+    if file_size == 0:
+        print("Client does not have specified file")
+        return
     try:
         with open(file_path, "xb") as file:
-            # assumes next message is size of file
-            rawrecv = socket.recv(SIZE)
-            print(str(rawrecv))
-            file_size_string = rawrecv.decode()
-            print("File size:")
-            print(file_size_string)
-            file_size = int(file_size_string)
-            print("error before checking file_size")
-            if file_size == 0:
-                print("File is not coming, size given is < 1")
-            else:
-                bytes_received = 0
-                while (bytes_received < file_size):
-                    data = socket.recv(SIZE)
-                    file.write(data)
-                    bytes_received += sys.getsizeof(data)
-                    print("Received " + str(bytes_received) + " of " + str(file_size) + " bytes ")
-                file.close()
+            # send confirmation of ready to receive
+            socket.send("1".encode())
+            # Start receiving file
+            bytes_received = 0
+            print("Started receiving file")
+            while (bytes_received < file_size):
+                data = socket.recv(SIZE)
+                file.write(data)
+                bytes_received += SIZE
+                #print("Received " + str(bytes_received) + " of " + str(file_size) + " bytes ")
+            file.close()
+            print("Finished receiving file of size " + str(os.path.getsize(file_path)))
+
     except FileExistsError:
         print("Error: File already exists")
+        socket.send("0".encode())
 
 
 if __name__ == '__main__':
