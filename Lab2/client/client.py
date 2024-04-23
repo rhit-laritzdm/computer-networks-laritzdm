@@ -44,19 +44,49 @@ def handle_request(socket, request):
 
 
 def client_i_want(socket, request):
-    file_path = request[6:]
-    if os.path.isfile(file_path):
+    file_path_server = request[6:]
+    file_name = skim_file_name(file_path_server)
+    print("What client directory would you like to save this file?")
+    file_dir_client = input(" -> ")
+    if file_dir_client == "":
+        file_dir_client = "received_files/"
+    file_path_client = file_dir_client + file_name
+    print("Planning to store file on client at " + file_path_client)
+
+    file_dir_server = skim_file_dir(file_path_server)
+    if file_dir_server == "":
+        file_dir_server = "store/"
+        file_path_server = file_dir_server + file_name
+        request = "iWant " + file_path_server
+
+
+    if os.path.isfile(file_path_client):
         print("You already have this file dummy")
         print("Cancelling request")
     else:
         socket.send(request.encode())
         print("iWant request sent")
-        recv_file(socket, file_path)
+        recv_file(socket, file_path_client)
 
 
 def client_u_take(socket, request):
-    file_path = request[6:]
-    if os.path.isfile(file_path):
+    file_path_client = request[6:]
+    file_name = skim_file_name(file_path_client)
+    print("What server directory would you like to save this file?")
+    file_dir_server = input(" -> ")
+    if file_dir_server == "":
+        file_dir_server = "store/"
+    file_path_server = file_dir_server + file_name
+    print("Planning to store file on server at " + file_path_server)
+    request = "uTake " + file_path_server
+
+    file_dir_client = skim_file_dir(file_path_client)
+    if file_dir_client == "":
+        file_dir_client = "received_files/"
+        file_path_client = file_dir_client + file_name
+
+
+    if os.path.isfile(file_path_client):
         # send the request and file
         socket.send(request.encode())
         response = socket.recv(SIZE).decode()
@@ -64,14 +94,14 @@ def client_u_take(socket, request):
             print("Server already has specified file")
             return
         print("uTake request sent")
-        send_file(socket, file_path)
+        send_file(socket, file_path_client)
     else:
         # File does not exist at the specified file path
         print("What you talkin bout Willis? I aint seen that file anywhere")
 
 
-def send_file(socket, file_path):
-    file_size = os.path.getsize(file_path)
+def send_file(socket, file_path_client):
+    file_size = os.path.getsize(file_path_client)
     print("Sending file of size: " + str(file_size))
     socket.send(str(file_size).encode())
     # Wait for confirmation before sending file
@@ -82,7 +112,7 @@ def send_file(socket, file_path):
         return
 
     # open file and read in binary mode
-    file = open(file_path, 'rb')
+    file = open(file_path_client, 'rb')
     # send one line at a time
     line = file.read(SIZE)
     while line:
@@ -92,7 +122,7 @@ def send_file(socket, file_path):
     print("Finished sending file")
 
 
-def recv_file(socket, file_path):
+def recv_file(socket, file_path_client):
     # assumes next message is size of file
     file_size_string = socket.recv(SIZE).decode()
     print("File size: " + file_size_string)
@@ -102,7 +132,7 @@ def recv_file(socket, file_path):
         print("What you talkin bout Willis? I aint seen that file anywhere!")
         return
     try:
-        with open(file_path, "xb") as file:
+        with open(file_path_client, "xb") as file:
             # send confirmation
             socket.send("1".encode())
             # Start receiving file
@@ -114,10 +144,22 @@ def recv_file(socket, file_path):
                 bytes_received += SIZE
                 #print("Received " + str(bytes_received) + " of " + str(file_size) + " bytes ")
             file.close()
-            print("Finished receiving file of size " + str(os.path.getsize(file_path)))
+            print("Finished receiving file of size " + str(os.path.getsize(file_path_client)))
     except FileExistsError:
         print("Error: File already exists")
         socket.send("0".encode())
+
+
+def skim_file_name(file_path):
+    index_of_slash = file_path.rfind("/")
+    file_name = file_path[index_of_slash + 1 : ]
+    return file_name
+
+
+def skim_file_dir(file_path):
+    index_of_slash = file_path.rfind("/")
+    file_dir = file_path[: index_of_slash + 1]
+    return file_dir
 
 
 if __name__ == '__main__':
